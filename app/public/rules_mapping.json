@@ -1,0 +1,56 @@
+[
+  {
+    "rule_id": "R001",
+    "industry": ["地产"],
+    "project_type": ["新建"],
+    "include_standard_ids": ["QC-001", "SAFE-001", "MAT-001", "DESIGN-001", "PLAN-001"]
+  },
+  {
+    "rule_id": "R002",
+    "industry": ["地产"],
+    "project_type": ["改扩建"],
+    "include_standard_ids": ["QC-001", "SAFE-001", "MAT-001", "DESIGN-002", "SAFE-003"]
+  },
+  {
+    "rule_id": "R003",
+    "industry": ["地铁", "铁路"],
+    "project_type": ["新建"],
+    "include_standard_ids": ["QC-002", "SAFE-002", "DESIGN-001", "PLAN-001", "MANAGE-001"]
+  },
+  {
+    "rule_id": "R004",
+    "industry": ["地铁", "铁路"],
+    "project_type": ["改扩建"],
+    "include_standard_ids": ["QC-002", "SAFE-002", "DESIGN-002", "SAFE-003", "MANAGE-001"]
+  },
+  {
+    "rule_id": "R005",
+    "industry": ["建筑", "施工", "工程"],
+    "project_type": ["新建"],
+    "include_standard_ids": ["QC-003", "SAFE-004", "MANAGE-001", "ENV-001", "RISK-001"]
+  },
+  {
+    "rule_id": "R006",
+    "industry": ["建筑", "施工", "工程"],
+    "project_type": ["改扩建", "改造", "装修"],
+    "include_standard_ids": ["QC-003", "SAFE-004", "MANAGE-001", "ENV-001", "RISK-001"]
+  },
+  {
+    "rule_id": "R007",
+    "industry": ["公路", "桥梁", "隧道"],
+    "project_type": ["新建"],
+    "include_standard_ids": ["QC-003", "SAFE-004", "MANAGE-001", "ENV-001", "RISK-001"]
+  },
+  {
+    "rule_id": "R008",
+    "industry": ["水利"],
+    "project_type": ["新建"],
+    "include_standard_ids": ["QC-003", "SAFE-004", "MANAGE-001", "ENV-001", "RISK-001"]
+  },
+  {
+    "rule_id": "R009",
+    "industry": [],
+    "project_type": [],
+    "include_standard_ids": ["QC-003", "SAFE-004", "MANAGE-001"]
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-05T00:00:00Z",
+  "description": "初始版本",
+  "changes": [
+    "添加了初始的标准主表",
+    "添加了初始的规则映射",
+    "添加了初始的语义描述"
+  ],
+  "files": [
+    {
+      "name": "standards_master.json",
+      "version": "1.0.0",
+      "lastUpdated": "2026-02-05T00:00:00Z"
+    },
+    {
+      "name": "rules_mapping.json",
+      "version": "1.0.0",
+      "lastUpdated": "2026-02-05T00:00:00Z"
+    },
+    {
+      "name": "semantic_descriptions.md",
+      "version": "1.0.0",
+      "lastUpdated": "2026-02-05T00:00:00Z"
+    }
+  ]
+}

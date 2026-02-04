@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Search, FolderKanban, FileSpreadsheet, Sparkles, Download } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     const clients = Array.from(new Set(systems.map(s => s.client)));
 
@@ -121,6 +123,27 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
         }
     };
 
+    // Handle drag events
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+        handleFileUpload(e.dataTransfer.files);
+    };
+
     return (
         <div className="min-h-screen bg-background p-4 md:p-8 pb-24">
             <div className="max-w-7xl mx-auto space-y-8">
@@ -146,7 +169,13 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                     <p className="text-muted-foreground mb-6">
                         上传您的Excel标准资产文件，系统将自动进行数据清洗和结构转换。
                     </p>
-                    <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
+                    <div 
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 ${isDragging ? 'border-primary bg-primary/5' : 'border-muted'}`}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                    >
                         <input
                             type="file"
                             accept=".xls,.xlsx"
@@ -159,11 +188,15 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                             htmlFor="file-upload"
                             className="cursor-pointer flex flex-col items-center justify-center gap-4"
                         >
-                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                            <motion.div 
+                                className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary"
+                                animate={{ scale: isDragging ? 1.1 : 1 }}
+                                transition={{ duration: 0.2 }}
+                            >
                                 <FileSpreadsheet className="w-8 h-8" />
-                            </div>
+                            </motion.div>
                             <div>
-                                <p className="font-medium">点击或拖拽文件到此处上传</p>
+                                <p className="font-medium">{isDragging ? '释放文件以上传' : '点击或拖拽文件到此处上传'}</p>
                                 <p className="text-sm text-muted-foreground">支持 .xls 和 .xlsx 格式</p>
                             </div>
                         </label>
@@ -208,14 +241,16 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                             全部
                         </Button>
                         {clients.map(client => (
-                            <Button
-                                key={client}
-                                variant={selectedClient === client ? "default" : "outline"}
-                                onClick={() => setSelectedClient(client)}
-                                className="whitespace-nowrap"
-                            >
-                                {client}
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                    key={client}
+                                    variant={selectedClient === client ? "default" : "outline"}
+                                    onClick={() => setSelectedClient(client)}
+                                    className="whitespace-nowrap transition-all duration-200"
+                                >
+                                    {client}
+                                </Button>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
@@ -228,8 +263,17 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredSystems.map(sys => (
-                            <Card key={sys.id} className="group hover:border-primary/50 transition-all flex flex-col h-full">
+                        {filteredSystems.map((sys, index) => (
+                            <motion.div
+                                key={sys.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                    duration: 0.5,
+                                    delay: index * 0.05
+                                }}
+                            >
+                                <Card className="group hover:border-primary/50 transition-all flex flex-col h-full">
                                 <CardHeader
                                     className="cursor-pointer hover:bg-muted/50 rounded-t-lg transition-colors"
                                     onClick={() => setPreviewId(sys.id)}
@@ -264,7 +308,8 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                                         </div>
                                     )}
                                 </CardContent>
-                            </Card>
+                                </Card>
+                            </motion.div>
                         ))}
                         {filteredSystems.length === 0 && (
                             <div className="col-span-full text-center py-20">

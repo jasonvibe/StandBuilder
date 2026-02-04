@@ -98,7 +98,7 @@ ${semanticDesc}
       case 'openai':
         return this.callOpenAI(prompt);
       case 'local':
-        return this.callLocalLLM();
+        return this.callLocalLLM(prompt);
       case 'custom':
         return this.callCustomAPI(prompt);
       default:
@@ -134,10 +134,134 @@ ${semanticDesc}
   }
 
   // 调用本地LLM
-  private async callLocalLLM(): Promise<string> {
-    // 本地LLM调用实现
-    // 这里可以集成llama.cpp或其他本地LLM
-    throw new Error('本地LLM调用未实现');
+  private async callLocalLLM(prompt: string): Promise<string> {
+    // 基于规则的本地LLM模拟逻辑
+    // 分析prompt中的行业和项目类型
+    const industries = this.extractIndustriesFromPrompt(prompt);
+    const projectTypes = this.extractProjectTypesFromPrompt(prompt);
+    
+    // 基于行业和项目类型生成推荐
+    const recommendations = this.generateLocalRecommendations(industries, projectTypes);
+    
+    // 格式化为预期的输出格式
+    return recommendations.map(rec => `${rec.standard_id}: ${rec.reason}`).join('\n');
+  }
+  
+  // 从prompt中提取行业信息
+  private extractIndustriesFromPrompt(prompt: string): string[] {
+    const industryKeywords = ['地产', '建筑', '施工', '工程', '地铁', '铁路', '公路', '桥梁', '隧道', '水利'];
+    const industries: string[] = [];
+    
+    industryKeywords.forEach(keyword => {
+      if (prompt.includes(keyword)) {
+        industries.push(keyword);
+      }
+    });
+    
+    return industries;
+  }
+  
+  // 从prompt中提取项目类型信息
+  private extractProjectTypesFromPrompt(prompt: string): string[] {
+    const projectTypeKeywords = ['新建', '改扩建', '改造', '装修', '维护', '修缮'];
+    const projectTypes: string[] = [];
+    
+    projectTypeKeywords.forEach(keyword => {
+      if (prompt.includes(keyword)) {
+        projectTypes.push(keyword);
+      }
+    });
+    
+    return projectTypes;
+  }
+  
+  // 生成本地推荐
+  private generateLocalRecommendations(industries: string[], projectTypes: string[]): { standard_id: string; reason: string }[] {
+    const recommendations: { standard_id: string; reason: string }[] = [];
+    const recommendedStandardIds = new Set<string>();
+    
+    // 基于行业的推荐规则
+    if (industries.includes('地产')) {
+      // 为地产行业推荐一些标准
+      const realEstateStandards = [
+        { id: 'QC-001', reason: '地产项目必备的工程质量管理制度' },
+        { id: 'SAFE-001', reason: '地产项目的安全管理标准' },
+        { id: 'MAT-001', reason: '地产项目的材料验收标准' }
+      ];
+      
+      realEstateStandards.forEach(rec => {
+        if (!recommendedStandardIds.has(rec.id)) {
+          recommendedStandardIds.add(rec.id);
+          recommendations.push({ standard_id: rec.id, reason: rec.reason });
+        }
+      });
+    }
+    
+    if (industries.includes('地铁')) {
+      // 为地铁行业推荐一些标准
+      const subwayStandards = [
+        { id: 'QC-002', reason: '地铁工程质量控制标准' },
+        { id: 'SAFE-002', reason: '地铁工程安全管理标准' }
+      ];
+      
+      subwayStandards.forEach(rec => {
+        if (!recommendedStandardIds.has(rec.id)) {
+          recommendedStandardIds.add(rec.id);
+          recommendations.push({ standard_id: rec.id, reason: rec.reason });
+        }
+      });
+    }
+    
+    // 基于项目类型的推荐规则
+    if (projectTypes.includes('新建')) {
+      // 为新建项目推荐一些标准
+      const newProjectStandards = [
+        { id: 'DESIGN-001', reason: '新建项目的设计规范标准' },
+        { id: 'PLAN-001', reason: '新建项目的计划管理标准' }
+      ];
+      
+      newProjectStandards.forEach(rec => {
+        if (!recommendedStandardIds.has(rec.id)) {
+          recommendedStandardIds.add(rec.id);
+          recommendations.push({ standard_id: rec.id, reason: rec.reason });
+        }
+      });
+    }
+    
+    if (projectTypes.includes('改扩建')) {
+      // 为改扩建项目推荐一些标准
+      const renovationStandards = [
+        { id: 'DESIGN-002', reason: '改扩建项目的设计规范标准' },
+        { id: 'SAFE-003', reason: '改扩建项目的安全管理标准' }
+      ];
+      
+      renovationStandards.forEach(rec => {
+        if (!recommendedStandardIds.has(rec.id)) {
+          recommendedStandardIds.add(rec.id);
+          recommendations.push({ standard_id: rec.id, reason: rec.reason });
+        }
+      });
+    }
+    
+    // 如果没有足够的推荐，添加一些通用标准
+    if (recommendations.length < 5) {
+      const generalStandards = [
+        { id: 'QC-003', reason: '通用工程质量控制标准' },
+        { id: 'SAFE-004', reason: '通用工程安全管理标准' },
+        { id: 'MANAGE-001', reason: '通用项目管理标准' },
+        { id: 'ENV-001', reason: '通用环境管理标准' },
+        { id: 'RISK-001', reason: '通用风险管理标准' }
+      ];
+      
+      generalStandards.forEach(rec => {
+        if (!recommendedStandardIds.has(rec.id) && recommendations.length < 10) {
+          recommendedStandardIds.add(rec.id);
+          recommendations.push({ standard_id: rec.id, reason: rec.reason });
+        }
+      });
+    }
+    
+    return recommendations;
   }
 
   // 调用自定义API

@@ -126,12 +126,26 @@ export const parseSemanticDescriptions = (filePath: string): SemanticDescription
 // 从目录加载整个知识库
 export const loadKnowledgeBase = (kbPath: string) => {
   const standardsPath = path.join(kbPath, 'standards_master.xlsx');
+  const standardsJsonPath = path.join(kbPath, 'standards_master.json');
   const rulesPath = path.join(kbPath, 'rules_mapping.xlsx');
+  const rulesJsonPath = path.join(kbPath, 'rules_mapping.json');
   const semanticPath = path.join(kbPath, 'semantic_descriptions.md');
   const versionPath = path.join(kbPath, 'meta', 'version.json');
 
-  const standards = fs.existsSync(standardsPath) ? parseStandardsMaster(standardsPath) : [];
-  const rules = fs.existsSync(rulesPath) ? parseRulesMapping(rulesPath) : [];
+  let standards: StandardItem[] = [];
+  if (fs.existsSync(standardsPath)) {
+    standards = parseStandardsMaster(standardsPath);
+  } else if (fs.existsSync(standardsJsonPath)) {
+    standards = JSON.parse(fs.readFileSync(standardsJsonPath, 'utf8'));
+  }
+
+  let rules: RuleItem[] = [];
+  if (fs.existsSync(rulesPath)) {
+    rules = parseRulesMapping(rulesPath);
+  } else if (fs.existsSync(rulesJsonPath)) {
+    rules = JSON.parse(fs.readFileSync(rulesJsonPath, 'utf8'));
+  }
+
   const semantics = fs.existsSync(semanticPath) ? parseSemanticDescriptions(semanticPath) : [];
   const version = fs.existsSync(versionPath) ? JSON.parse(fs.readFileSync(versionPath, 'utf8')) : null;
 
@@ -141,6 +155,96 @@ export const loadKnowledgeBase = (kbPath: string) => {
     semantics,
     version
   };
+};
+
+// 从远程加载知识库
+export const loadRemoteKnowledgeBase = async () => {
+  try {
+    // 加载标准主表
+    const standardsResponse = await fetch('/standards_master.json');
+    const standards = await standardsResponse.json();
+
+    // 加载规则映射
+    const rulesResponse = await fetch('/rules_mapping.json');
+    const rules = await rulesResponse.json();
+
+    // 加载语义描述
+    const semanticResponse = await fetch('/semantic_descriptions.md');
+    const semanticContent = await semanticResponse.text();
+    
+    // 解析语义描述
+    const semantics = parseSemanticDescriptionsFromContent(semanticContent);
+
+    return {
+      standards,
+      rules,
+      semantics,
+      version: { timestamp: new Date().toISOString() }
+    };
+  } catch (error) {
+    console.error('加载远程知识库失败:', error);
+    return {
+      standards: [],
+      rules: [],
+      semantics: [],
+      version: null
+    };
+  }
+};
+
+// 从内容解析语义描述
+export const parseSemanticDescriptionsFromContent = (content: string): SemanticDescription[] => {
+  const lines = content.split('\n');
+  const descriptions: SemanticDescription[] = [];
+
+  let currentDescription: SemanticDescription | null = null;
+  let currentSection: 'applicable' | 'not_recommended' | null = null;
+
+  lines.forEach(line => {
+    line = line.trim();
+    
+    // 匹配标准ID标题
+    const idMatch = line.match(/^##\s+([A-Z0-9\-]+)\s+(.+)$/);
+    if (idMatch) {
+      if (currentDescription) {
+        descriptions.push(currentDescription);
+      }
+      currentDescription = {
+        standard_id: idMatch[1],
+        content: idMatch[2],
+        applicable_scenarios: [],
+        not_recommended_scenarios: []
+      };
+      currentSection = null;
+    }
+    
+    // 匹配适用场景
+    else if (line === '适用场景：') {
+      currentSection = 'applicable';
+    }
+    
+    // 匹配不建议使用场景
+    else if (line === '不建议使用场景：') {
+      currentSection = 'not_recommended';
+    }
+    
+    // 匹配场景项
+    else if (currentDescription && currentSection && line.startsWith('- ')) {
+      const scenario = line.substring(2).trim();
+      if (currentSection === 'applicable') {
+        currentDescription.applicable_scenarios.push(scenario);
+      } else if (currentSection === 'not_recommended') {
+        currentDescription.not_recommended_scenarios.push(scenario);
+      }
+    }
+  });
+
+  // 添加最后一个描述
+  if (currentDescription) {
+    descriptions.push(currentDescription);
+  }
+
+  return descriptions;
 };
 
 // 导出类型

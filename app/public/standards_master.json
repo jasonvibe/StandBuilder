@@ -1,0 +1,142 @@
+[
+  {
+    "standard_id": "QC-001",
+    "standard_name": "工程质量管理制度",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程"],
+    "project_type": ["新建", "改扩建"],
+    "priority": "mandatory",
+    "description": "地产项目必备的工程质量管理制度，包含质量控制流程、验收标准和质量责任体系",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "QC-002",
+    "standard_name": "地铁工程质量控制标准",
+    "standard_type": "制度",
+    "industry": ["地铁", "铁路"],
+    "project_type": ["新建", "改扩建"],
+    "priority": "mandatory",
+    "description": "地铁工程专用的质量控制标准，包含特殊工艺和安全要求",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "QC-003",
+    "standard_name": "通用工程质量控制标准",
+    "standard_type": "制度",
+    "industry": ["建筑", "施工", "工程", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建", "改扩建", "改造", "装修", "维护", "修缮"],
+    "priority": "mandatory",
+    "description": "适用于各类工程的通用质量控制标准",
+    "source": "国家标准"
+  },
+  {
+    "standard_id": "SAFE-001",
+    "standard_name": "地产项目安全管理标准",
+    "standard_type": "制度",
+    "industry": ["地产"],
+    "project_type": ["新建", "改扩建"],
+    "priority": "mandatory",
+    "description": "地产项目的安全管理标准，包含现场安全、施工安全和消防安全",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "SAFE-002",
+    "standard_name": "地铁工程安全管理标准",
+    "standard_type": "制度",
+    "industry": ["地铁", "铁路"],
+    "project_type": ["新建", "改扩建"],
+    "priority": "mandatory",
+    "description": "地铁工程专用的安全管理标准，包含地下施工安全和特殊设备安全",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "SAFE-003",
+    "standard_name": "改扩建项目安全管理标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路"],
+    "project_type": ["改扩建", "改造", "装修"],
+    "priority": "mandatory",
+    "description": "改扩建项目的安全管理标准，包含旧设施拆除和改造安全",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "SAFE-004",
+    "standard_name": "通用工程安全管理标准",
+    "standard_type": "制度",
+    "industry": ["建筑", "施工", "工程", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建", "改扩建", "改造", "装修", "维护", "修缮"],
+    "priority": "mandatory",
+    "description": "适用于各类工程的通用安全管理标准",
+    "source": "国家标准"
+  },
+  {
+    "standard_id": "MAT-001",
+    "standard_name": "地产项目材料验收标准",
+    "standard_type": "检查表",
+    "industry": ["地产"],
+    "project_type": ["新建", "改扩建"],
+    "priority": "mandatory",
+    "description": "地产项目的材料验收标准，包含建材质量和环保要求",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "DESIGN-001",
+    "standard_name": "新建项目设计规范标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建"],
+    "priority": "mandatory",
+    "description": "新建项目的设计规范标准，包含设计流程和技术要求",
+    "source": "国家标准"
+  },
+  {
+    "standard_id": "DESIGN-002",
+    "standard_name": "改扩建项目设计规范标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["改扩建", "改造", "装修"],
+    "priority": "mandatory",
+    "description": "改扩建项目的设计规范标准，包含旧设施评估和改造设计要求",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "PLAN-001",
+    "standard_name": "新建项目计划管理标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建"],
+    "priority": "recommended",
+    "description": "新建项目的计划管理标准，包含进度计划和资源管理",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "MANAGE-001",
+    "standard_name": "通用项目管理标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建", "改扩建", "改造", "装修", "维护", "修缮"],
+    "priority": "recommended",
+    "description": "适用于各类项目的通用管理标准，包含项目组织和沟通管理",
+    "source": "行业标准"
+  },
+  {
+    "standard_id": "ENV-001",
+    "standard_name": "通用环境管理标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建", "改扩建", "改造", "装修", "维护", "修缮"],
+    "priority": "recommended",
+    "description": "适用于各类工程的环境管理标准，包含环保要求和污染控制",
+    "source": "国家标准"
+  },
+  {
+    "standard_id": "RISK-001",
+    "standard_name": "通用风险管理标准",
+    "standard_type": "制度",
+    "industry": ["地产", "建筑", "施工", "工程", "地铁", "铁路", "公路", "桥梁", "隧道", "水利"],
+    "project_type": ["新建", "改扩建", "改造", "装修", "维护", "修缮"],
+    "priority": "recommended",
+    "description": "适用于各类项目的风险管理标准，包含风险识别和应对措施",
+    "source": "行业标准"
+  }
+]

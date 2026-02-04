@@ -6,12 +6,16 @@ import type { MatchResult } from './ruleEngine';
 
 // 导出配置接口
 export interface ExportConfig {
-  format: 'excel' | 'json' | 'csv';
+  format: 'excel' | 'json' | 'csv' | 'markdown';
   includeHeaders?: boolean;
   includeMetadata?: boolean;
   includeSources?: boolean;
   filename?: string;
   sheetName?: string;
+  sortBy?: 'priority' | 'name' | 'type';
+  encoding?: 'utf8' | 'utf16';
+  includeFields?: string[];
+  excludeFields?: string[];
 }
 
 // 导出项接口
@@ -33,6 +37,9 @@ export class Exporter {
         break;
       case 'csv':
         this.exportToCSV(items, config);
+        break;
+      case 'markdown':
+        this.exportToMarkdown(items, config);
         break;
       default:
         throw new Error('不支持的导出格式');
@@ -57,6 +64,10 @@ export class Exporter {
         case 'csv':
           const csvContent = this.generateCSVContent(moduleItems, config);
           zip.file(`${moduleName}.csv`, csvContent);
+          break;
+        case 'markdown':
+          const markdownContent = this.generateMarkdownContent(moduleItems, config);
+          zip.file(`${moduleName}.md`, markdownContent);
           break;
       }
     }
@@ -125,7 +136,7 @@ export class Exporter {
 
   // 准备导出数据
   private prepareExportData(items: ExportItem[], config: ExportConfig): any[] {
-    return items.map(item => {
+    let data = items.map(item => {
       const exportData: any = {
         standard_id: item.standard.standard_id,
         standard_name: item.standard.standard_name,
@@ -151,6 +162,63 @@ export class Exporter {
       }
 
       return exportData;
+    });
+
+    // 应用排序
+    if (config.sortBy) {
+      data = this.sortExportData(data, config.sortBy);
+    }
+
+    // 应用字段过滤
+    if (config.includeFields || config.excludeFields) {
+      data = this.filterExportFields(data, config.includeFields || [], config.excludeFields || []);
+    }
+
+    return data;
+  }
+
+  // 排序导出数据
+  private sortExportData(data: any[], sortBy: 'priority' | 'name' | 'type'): any[] {
+    return [...data].sort((a, b) => {
+      switch (sortBy) {
+        case 'priority':
+          // mandatory 优先于 recommended
+          if (a.priority === 'mandatory' && b.priority === 'recommended') return -1;
+          if (a.priority === 'recommended' && b.priority === 'mandatory') return 1;
+          return 0;
+        case 'name':
+          return a.standard_name.localeCompare(b.standard_name);
+        case 'type':
+          return a.standard_type.localeCompare(b.standard_type);
+        default:
+          return 0;
+      }
+    });
+  }
+
+  // 过滤导出字段
+  private filterExportFields(data: any[], includeFields: string[], excludeFields: string[]): any[] {
+    return data.map(item => {
+      const filteredItem: any = {};
+      
+      Object.keys(item).forEach(key => {
+        if (includeFields.length > 0) {
+          // 如果指定了包含字段，只包含这些字段
+          if (includeFields.includes(key)) {
+            filteredItem[key] = item[key];
+          }
+        } else if (excludeFields.length > 0) {
+          // 如果指定了排除字段，排除这些字段
+          if (!excludeFields.includes(key)) {
+            filteredItem[key] = item[key];
+          }
+        } else {
+          // 如果没有指定，包含所有字段
+          filteredItem[key] = item[key];
+        }
+      });
+      
+      return filteredItem;
     });
   }
 
