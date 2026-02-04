@@ -12,14 +12,22 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load data from db.json
     fetch('/db.json')
       .then(res => res.json())
       .then(data => {
-        setAllSystems(data);
+        // Load user-uploaded systems from local storage
+        const userSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+        // Merge both data sources
+        const mergedSystems = [...data, ...userSystems];
+        setAllSystems(mergedSystems);
         setLoading(false);
       })
       .catch(err => {
         console.error("Failed to load DB", err);
+        // Even if db.json fails, load user systems from local storage
+        const userSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+        setAllSystems(userSystems);
         setLoading(false);
       });
   }, []);

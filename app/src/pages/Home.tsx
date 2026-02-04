@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Search, FolderKanban, FileSpreadsheet, Sparkles, Download } from 'lucide-react';
 import type { SystemMetadata } from '@/types';
 import Preview from './Preview';
+import * as XLSX from 'xlsx';
 
 interface HomeProps {
     onGenerate: () => void;
@@ -15,6 +16,10 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClient, setSelectedClient] = useState<string | null>(null);
     const [previewId, setPreviewId] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
     const clients = Array.from(new Set(systems.map(s => s.client)));
 
@@ -24,6 +29,97 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
         const matchesClient = selectedClient ? sys.client === selectedClient : true;
         return matchesSearch && matchesClient;
     });
+
+    // Handle file upload
+    const handleFileUpload = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+
+        setUploading(true);
+        setUploadProgress(0);
+        setUploadError(null);
+        setUploadSuccess(null);
+
+        try {
+            const processedFiles = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const progress = Math.round((i / files.length) * 100);
+                setUploadProgress(progress);
+
+                // Parse Excel file
+                const workbook = XLSX.read(await file.arrayBuffer());
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const content = XLSX.utils.sheet_to_json(worksheet);
+
+                // Generate system metadata
+                const systemId = `USER_${Date.now()}_${i}`;
+                const systemName = file.name.replace(/\.xls[x]?$/, '');
+                const client = '用户上传';
+                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+
+                // Extract headers
+                const originalHeader = content.length > 0 ? Object.keys(content[0]) : [];
+                const keys = originalHeader.map((header, index) => {
+                    return header.toLowerCase()
+                        .replace(/\s+/g, '_')
+                        .replace(/[^a-zA-Z0-9_]/g, '')
+                        .replace(/^_+|_+$/g, '') || `col_${index}`;
+                });
+
+                // Process content
+                const processedContent = content.map((row: any) => {
+                    const newRow: Record<string, any> = {};
+                    originalHeader.forEach((header, index) => {
+                        newRow[keys[index]] = row[header];
+                    });
+                    return newRow;
+                });
+
+                // Create system object
+                const system = {
+                    id: systemId,
+                    client,
+                    context: '用户上传',
+                    systemName,
+                    date,
+                    filename: file.name,
+                    itemCount: content.length,
+                    tags: [client, systemName],
+                    originalHeader,
+                    keys,
+                    content: processedContent
+                };
+
+                processedFiles.push(system);
+            }
+
+            // Store in local storage
+            const existingSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+            const updatedSystems = [...existingSystems, ...processedFiles];
+            localStorage.setItem('userSystems', JSON.stringify(updatedSystems));
+
+            setUploadProgress(100);
+            setUploadSuccess(`成功上传并处理了 ${files.length} 个文件`);
+
+            // Reset after 3 seconds
+            setTimeout(() => {
+                setUploadSuccess(null);
+                setUploading(false);
+                setUploadProgress(0);
+            }, 3000);
+
+        } catch (error) {
+            console.error('File upload error:', error);
+            setUploadError('文件处理失败，请检查文件格式是否正确');
+            setUploading(false);
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                setUploadError(null);
+            }, 3000);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background p-4 md:p-8 pb-24">
@@ -39,6 +135,57 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                             浏览、搜索并按需生成您的项目体系文件。
                         </p>
                     </div>
+                </div>
+
+                {/* File Upload Section */}
+                <div className="bg-card p-6 rounded-xl border shadow-sm">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <FileSpreadsheet className="w-5 h-5 text-primary" />
+                        上传Excel文件
+                    </h2>
+                    <p className="text-muted-foreground mb-6">
+                        上传您的Excel标准资产文件，系统将自动进行数据清洗和结构转换。
+                    </p>
+                    <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
+                        <input
+                            type="file"
+                            accept=".xls,.xlsx"
+                            multiple
+                            className="hidden"
+                            id="file-upload"
+                            onChange={(e) => handleFileUpload(e.target.files)}
+                        />
+                        <label
+                            htmlFor="file-upload"
+                            className="cursor-pointer flex flex-col items-center justify-center gap-4"
+                        >
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                <FileSpreadsheet className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <p className="font-medium">点击或拖拽文件到此处上传</p>
+                                <p className="text-sm text-muted-foreground">支持 .xls 和 .xlsx 格式</p>
+                            </div>
+                        </label>
+                    </div>
+                    {uploading && (
+                        <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                <p className="text-sm">正在处理文件... {uploadProgress}%</p>
+                            </div>
+                        </div>
+                    )}
+                    {uploadError && (
+                        <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+                            <p className="text-sm text-destructive">{uploadError}</p>
+                        </div>
+                    )}
+                    {uploadSuccess && (
+                        <div className="mt-4 p-4 bg-success/5 border border-success/20 rounded-lg">
+                            <p className="text-sm text-success">{uploadSuccess}</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Filters */}
