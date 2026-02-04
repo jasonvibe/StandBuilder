@@ -1,0 +1,64 @@
+{
+  "id": "SYS_033",
+  "client": "星河地产",
+  "context": "星河Prod-V6",
+  "systemName": "桩基验收体系",
+  "date": "20260130",
+  "filename": "星河地产-PROD(星河Prod-V6)桩基验收体系-20260130.xls",
+  "originalHeader": [
+    "序号",
+    "分部名称",
+    "子分部名称",
+    "分项名称"
+  ],
+  "keys": [
+    "1",
+    "CateName",
+    "SubCateName",
+    "LibName"
+  ],
+  "content": [
+    {
+      "1": "2",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "预应力管桩（锤击）"
+    },
+    {
+      "1": "3",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "预应力管桩（静压）"
+    },
+    {
+      "1": "4",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "旋挖灌注桩"
+    },
+    {
+      "1": "5",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "人工挖孔桩"
+    },
+    {
+      "1": "6",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "冲孔灌注桩"
+    },
+    {
+      "1": "7",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "钻孔灌注桩"
+    },
+    {
+      "1": "8",
+      "CateName": "桩基验收",
+      "SubCateName": "桩基类型",
+      "LibName": "静压方桩"
+    }
+  ]
+}

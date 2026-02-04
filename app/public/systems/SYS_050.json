@@ -1,0 +1,346 @@
+{
+  "id": "SYS_050",
+  "client": "深铁置业",
+  "context": "深铁置业-集团云PROD",
+  "systemName": "计划管理-节点库体系",
+  "date": "20260130",
+  "filename": "深铁置业-PROD(深铁置业-集团云PROD)计划管理-节点库体系-20260130.xls",
+  "originalHeader": [
+    "序号",
+    "节点编码",
+    "节点Id",
+    "节点名称",
+    "节点级别"
+  ],
+  "keys": [
+    "1",
+    "TaskNum",
+    "TaskLibraryId",
+    "NodeName",
+    "NodeLevel"
+  ],
+  "content": [
+    {
+      "1": "2",
+      "TaskNum": "R0000001",
+      "TaskLibraryId": "1925742631559309824",
+      "NodeName": "开工",
+      "NodeLevel": "里程碑节点"
+    },
+    {
+      "1": "3",
+      "TaskNum": "R0000002",
+      "TaskLibraryId": "1925742766565567488",
+      "NodeName": "地下室底板完成浇筑",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "4",
+      "TaskNum": "R0000003",
+      "TaskLibraryId": "1925742874665363456",
+      "NodeName": "地下室封顶（全部）/上盖转换层封顶（全部）",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "5",
+      "TaskNum": "R0000004",
+      "TaskLibraryId": "1925742924850212608",
+      "NodeName": "塔楼出±0/上盖项目塔楼转换层施工完成",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "6",
+      "TaskNum": "R0000005",
+      "TaskLibraryId": "1925742983478192384",
+      "NodeName": "塔楼首层标准层拆模样板",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "7",
+      "TaskNum": "R0000006",
+      "TaskLibraryId": "1925743078768584704",
+      "NodeName": "标准层（含各户型）砌筑安装样板",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "8",
+      "TaskNum": "R0000007",
+      "TaskLibraryId": "1925743132300487936",
+      "NodeName": "售楼处主体施工完成",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "9",
+      "TaskNum": "R0000008",
+      "TaskLibraryId": "1925743176651055104",
+      "NodeName": "售楼处二次结构施工",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "10",
+      "TaskNum": "R0000009",
+      "TaskLibraryId": "1925743228266161152",
+      "NodeName": "售楼处电梯安装调试",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "11",
+      "TaskNum": "R0000010",
+      "TaskLibraryId": "1925743278803330304",
+      "NodeName": "完成售楼部精装施工",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "12",
+      "TaskNum": "R0000011",
+      "TaskLibraryId": "1925743322013049088",
+      "NodeName": "主体达到预售条件",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "13",
+      "TaskNum": "R0000012",
+      "TaskLibraryId": "1925743370276904960",
+      "NodeName": "主体结构封顶",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "14",
+      "TaskNum": "R0000013",
+      "TaskLibraryId": "1925743410395423488",
+      "NodeName": "屋面结构完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "15",
+      "TaskNum": "R0000014",
+      "TaskLibraryId": "1925744192045919744",
+      "NodeName": "屋面装修样板",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "16",
+      "TaskNum": "R0000015",
+      "TaskLibraryId": "1925744233607277568",
+      "NodeName": "主体结构验收完成",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "17",
+      "TaskNum": "R0000016",
+      "TaskLibraryId": "1925744276510813440",
+      "NodeName": "所有楼栋砌筑完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "18",
+      "TaskNum": "R0000017",
+      "TaskLibraryId": "1925744320467117568",
+      "NodeName": "所有楼栋抹灰完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "19",
+      "TaskNum": "R0000018",
+      "TaskLibraryId": "1925744369708245248",
+      "NodeName": "外窗框安装完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "20",
+      "TaskNum": "R0000019",
+      "TaskLibraryId": "1925744408312622848",
+      "NodeName": "完成门窗扇及栏杆玻璃安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "21",
+      "TaskNum": "R0000020",
+      "TaskLibraryId": "1925744462020685568",
+      "NodeName": "完成外墙试水",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "22",
+      "TaskNum": "R0000021",
+      "TaskLibraryId": "1925744510838187264",
+      "NodeName": "土建移交精装样板完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "23",
+      "TaskNum": "R0000022",
+      "TaskLibraryId": "1925744565070537472",
+      "NodeName": "土建移交精装完成",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "24",
+      "TaskNum": "R0000023",
+      "TaskLibraryId": "1925744599790986496",
+      "NodeName": "毛坯交付样板（精装交付无此节点）",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "25",
+      "TaskNum": "R0000024",
+      "TaskLibraryId": "1925744640194716160",
+      "NodeName": "精装修交付样板（有精装交付时有此节点）",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "26",
+      "TaskNum": "R0000025",
+      "TaskLibraryId": "1925744680753639168",
+      "NodeName": "公区装修交付样板（首层大堂，地下室大堂，电梯前室，楼梯间）",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "27",
+      "TaskNum": "R0000026",
+      "TaskLibraryId": "1925744721379665664",
+      "NodeName": "精装交付样板验收完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "28",
+      "TaskNum": "R0000027",
+      "TaskLibraryId": "1925744760810319360",
+      "NodeName": "墙地砖铺贴施工",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "29",
+      "TaskNum": "R0000028",
+      "TaskLibraryId": "1925744805039254016",
+      "NodeName": "天花吊顶施工",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "30",
+      "TaskNum": "R0000029",
+      "TaskLibraryId": "1925744845497510656",
+      "NodeName": "户内墙面漆施工",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "31",
+      "TaskNum": "R0000030",
+      "TaskLibraryId": "1925744879756584704",
+      "NodeName": "木地板安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "32",
+      "TaskNum": "R0000031",
+      "TaskLibraryId": "1925744914950989312",
+      "NodeName": "户内门安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "33",
+      "TaskNum": "R0000032",
+      "TaskLibraryId": "1925744951542099200",
+      "NodeName": "橱柜，卫浴柜，玄关柜，衣柜施工完成",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "34",
+      "TaskNum": "R0000033",
+      "TaskLibraryId": "1925744986237381120",
+      "NodeName": "灯具开关插座安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "35",
+      "TaskNum": "R0000034",
+      "TaskLibraryId": "1925745018424467968",
+      "NodeName": "卫生洁具五金安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "36",
+      "TaskNum": "R0000035",
+      "TaskLibraryId": "1925745059528648192",
+      "NodeName": "厨房电器安装",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "37",
+      "TaskNum": "R0000036",
+      "TaskLibraryId": "1925745092315524864",
+      "NodeName": "批量精装修施工完成",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "38",
+      "TaskNum": "R0000037",
+      "TaskLibraryId": "1925745125119175936",
+      "NodeName": "入户门安装完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "39",
+      "TaskNum": "R0000038",
+      "TaskLibraryId": "1925745158300311808",
+      "NodeName": "公共区域精装完成",
+      "NodeLevel": "一级节点"
+    },
+    {
+      "1": "40",
+      "TaskNum": "R0000039",
+      "TaskLibraryId": "1925745196418147840",
+      "NodeName": "室外管网完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "41",
+      "TaskNum": "R0000040",
+      "TaskLibraryId": "1925745231134404096",
+      "NodeName": "景观完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "42",
+      "TaskNum": "R0000041",
+      "TaskLibraryId": "1925745261278867200",
+      "NodeName": "地下室砌筑抹灰完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "43",
+      "TaskNum": "R0000042",
+      "TaskLibraryId": "1925745294069935872",
+      "NodeName": "地下室涂料完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "44",
+      "TaskNum": "R0000043",
+      "TaskLibraryId": "1925745334679183872",
+      "NodeName": "消防安装完成",
+      "NodeLevel": "三级节点"
+    },
+    {
+      "1": "45",
+      "TaskNum": "R0000044",
+      "TaskLibraryId": "1925745363393390080",
+      "NodeName": "入伙交付",
+      "NodeLevel": "里程碑节点"
+    },
+    {
+      "1": "46",
+      "TaskNum": "R0000045",
+      "TaskLibraryId": "1925750915603310336",
+      "NodeName": "主体结构",
+      "NodeLevel": "二级节点"
+    },
+    {
+      "1": "47",
+      "TaskNum": "R0000046",
+      "TaskLibraryId": "1925751932722031360",
+      "NodeName": "砌筑完成50%",
+      "NodeLevel": "二级节点"
+    }
+  ]
+}

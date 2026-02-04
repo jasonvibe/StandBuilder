@@ -1,0 +1,112 @@
+{
+  "id": "SYS_016",
+  "client": "中海地产",
+  "context": "中海地产PROD",
+  "systemName": "桩基验收体系",
+  "date": "20260130",
+  "filename": "中海地产-PROD(中海地产PROD)桩基验收体系-20260130.xls",
+  "originalHeader": [
+    "序号",
+    "分部名称",
+    "子分部名称",
+    "分项名称"
+  ],
+  "keys": [
+    "1",
+    "CateName",
+    "SubCateName",
+    "LibName"
+  ],
+  "content": [
+    {
+      "1": "2",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "钻孔灌注桩"
+    },
+    {
+      "1": "3",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "桩基后注浆"
+    },
+    {
+      "1": "4",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "锤击管桩"
+    },
+    {
+      "1": "5",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "静压管桩"
+    },
+    {
+      "1": "6",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "锤击方桩"
+    },
+    {
+      "1": "7",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "静压方桩"
+    },
+    {
+      "1": "8",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "人工挖孔桩"
+    },
+    {
+      "1": "9",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "长螺旋压灌桩"
+    },
+    {
+      "1": "10",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "CFG桩"
+    },
+    {
+      "1": "11",
+      "CateName": "地基基础工程",
+      "SubCateName": "桩基工程",
+      "LibName": "搅拌桩"
+    },
+    {
+      "1": "12",
+      "CateName": "地基基础工程",
+      "SubCateName": "支护桩",
+      "LibName": "钻孔灌注桩（支护桩）"
+    },
+    {
+      "1": "13",
+      "CateName": "地基基础工程",
+      "SubCateName": "支护桩",
+      "LibName": "锤击管桩（支护桩）"
+    },
+    {
+      "1": "14",
+      "CateName": "地基基础工程",
+      "SubCateName": "支护桩",
+      "LibName": "静压管桩（支护桩）"
+    },
+    {
+      "1": "15",
+      "CateName": "地基基础工程",
+      "SubCateName": "支护桩",
+      "LibName": "搅拌桩（支护桩）"
+    },
+    {
+      "1": "16",
+      "CateName": "地基基础工程",
+      "SubCateName": "基础承台",
+      "LibName": "管桩承台"
+    }
+  ]
+}
