@@ -59,7 +59,7 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                 const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
 
                 // Extract headers
-                const originalHeader = content.length > 0 ? Object.keys(content[0]) : [];
+                const originalHeader = content.length > 0 ? Object.keys(content[0] as object) : [];
                 const keys = originalHeader.map((header, index) => {
                     return header.toLowerCase()
                         .replace(/\s+/g, '_')

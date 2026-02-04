@@ -45,7 +45,7 @@ export class AIAdvisor {
       const response = await this.callAI(prompt);
       
       // 解析AI响应
-      return this.parseAIResponse(response, input);
+      return this.parseAIResponse(response);
     } catch (error) {
       console.error('AI顾问错误:', error);
       return [];
@@ -54,8 +54,8 @@ export class AIAdvisor {
 
   // 生成提示词
   private generatePrompt(input: AIAdvisorInput): string {
-    const existingStandardIds = new Set(input.existingStandards.map(s => s.standard_id));
-    const availableStandards = this.standards.filter(s => !existingStandardIds.has(s.standard_id));
+
+
 
     // 构建行业和项目类型描述
     const industryDesc = input.industries.length > 0 ? `行业: ${input.industries.join(', ')}` : '行业: 不限';
@@ -98,7 +98,7 @@ ${semanticDesc}
       case 'openai':
         return this.callOpenAI(prompt);
       case 'local':
-        return this.callLocalLLM(prompt);
+        return this.callLocalLLM();
       case 'custom':
         return this.callCustomAPI(prompt);
       default:
@@ -134,7 +134,7 @@ ${semanticDesc}
   }
 
   // 调用本地LLM
-  private async callLocalLLM(prompt: string): Promise<string> {
+  private async callLocalLLM(): Promise<string> {
     // 本地LLM调用实现
     // 这里可以集成llama.cpp或其他本地LLM
     throw new Error('本地LLM调用未实现');
@@ -163,7 +163,7 @@ ${semanticDesc}
   }
 
   // 解析AI响应
-  private parseAIResponse(response: string, input: AIAdvisorInput): MatchResult[] {
+  private parseAIResponse(response: string): MatchResult[] {
     const results: MatchResult[] = [];
     const lines = response.split('\n');
 

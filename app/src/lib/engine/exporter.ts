@@ -98,7 +98,6 @@ export class Exporter {
 
   // 导出为CSV
   private exportToCSV(items: ExportItem[], config: ExportConfig): void {
-    const data = this.prepareExportData(items, config);
     const content = this.generateCSVContent(items, config);
     const filename = config.filename || `体系文件-${new Date().toISOString().split('T')[0]}.csv`;
     saveAs(new Blob([content], { type: 'text/csv;charset=utf-8;' }), filename);
