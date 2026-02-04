@@ -26,16 +26,16 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
     });
 
     return (
-        <div className="min-h-screen bg-background p-8 pb-24">
+        <div className="min-h-screen bg-background p-4 md:p-8 pb-24">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                            <FolderKanban className="w-10 h-10 text-primary" />
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                            <FolderKanban className="w-8 md:w-10 h-8 md:h-10 text-primary" />
                             体系数据库
                         </h1>
-                        <p className="text-muted-foreground mt-2 text-lg">
+                        <p className="text-muted-foreground mt-2 text-base md:text-lg">
                             浏览、搜索并按需生成您的项目体系文件。
                         </p>
                     </div>
@@ -65,6 +65,7 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                                 key={client}
                                 variant={selectedClient === client ? "default" : "outline"}
                                 onClick={() => setSelectedClient(client)}
+                                className="whitespace-nowrap"
                             >
                                 {client}
                             </Button>
@@ -74,11 +75,14 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
 
                 {/* Content Grid */}
                 {loading ? (
-                    <div className="text-center py-20 text-muted-foreground">加载中...</div>
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+                        <p className="text-muted-foreground">加载体系数据库中...</p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredSystems.map(sys => (
-                            <Card key={sys.id} className="group hover:border-primary/50 transition-all flex flex-col">
+                            <Card key={sys.id} className="group hover:border-primary/50 transition-all flex flex-col h-full">
                                 <CardHeader
                                     className="cursor-pointer hover:bg-muted/50 rounded-t-lg transition-colors"
                                     onClick={() => setPreviewId(sys.id)}
@@ -116,8 +120,12 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                             </Card>
                         ))}
                         {filteredSystems.length === 0 && (
-                            <div className="col-span-full text-center py-20 text-muted-foreground">
-                                未找到匹配的体系文件
+                            <div className="col-span-full text-center py-20">
+                                <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <FileSpreadsheet className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                <h3 className="text-lg font-semibold mb-2">未找到匹配的体系文件</h3>
+                                <p className="text-muted-foreground">请尝试调整搜索条件或客户筛选</p>
                             </div>
                         )}
                     </div>

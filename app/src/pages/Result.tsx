@@ -177,110 +177,139 @@ export default function Result({ config, allSystems, onBack }: ResultProps) {
     };
 
     return (
-        <div className="min-h-screen bg-muted/20 p-8 pb-24">
+        <div className="min-h-screen bg-muted/20 p-4 md:p-8 pb-24">
             <div className="max-w-5xl mx-auto space-y-6">
-                <div className="flex items-center gap-4 mb-8">
-                    <Button variant="ghost" onClick={onBack}>
-                        <ArrowLeft className="w-5 h-5 mr-2" />
-                        返回
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold">体系生成结果</h1>
-                        <p className="text-muted-foreground">
-                            基于您选择的行业与项目类型，已提取并优化生成 {systemsToExport.length} 个体系模块
-                        </p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" onClick={onBack}>
+                            <ArrowLeft className="w-5 h-5 mr-2" />
+                            返回
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold">体系生成结果</h1>
+                            <p className="text-muted-foreground">
+                                基于您选择的行业与项目类型，已提取并优化生成 {systemsToExport.length} 个体系模块
+                            </p>
+                        </div>
                     </div>
-                    <div className="ml-auto flex gap-3">
-                        <Button size="lg" onClick={handleDownloadAll} className="gap-2">
+                    <div className="flex gap-3">
+                        <Button 
+                            size="lg" 
+                            onClick={handleDownloadAll} 
+                            className="gap-2"
+                            disabled={systemsToExport.length === 0}
+                        >
                             <Download className="w-5 h-5" />
                             打包下载新体系
                         </Button>
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    {systemsToExport.map(sys => {
-                        const detail = systemDetails[sys.id];
-                        // Use dynamic count if loaded, else use meta count (approx)
-                        const count = detail ? detail.itemCount : sys.itemCount;
+                {systemsToExport.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FileText className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">未生成体系模块</h3>
+                        <p className="text-muted-foreground mb-6">请检查您的配置选项，确保选择了有效的行业和项目类型</p>
+                        <Button variant="default" onClick={onBack}>
+                            返回重新配置
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {systemsToExport.map(sys => {
+                            const detail = systemDetails[sys.id];
+                            // Use dynamic count if loaded, else use meta count (approx)
+                            const count = detail ? detail.itemCount : sys.itemCount;
 
-                        return (
-                            <Card key={sys.id} className="overflow-hidden">
-                                <div
-                                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => toggleExpand(sys.id)}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-primary/10 rounded text-primary">
-                                            <FileText className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold">{sys.systemName}</h3>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                <span>{sys.client}</span>
-                                                <span>•</span>
-                                                {/* Highlight if filtered */}
-                                                <span>{count} 项标准</span>
-                                                {detail && detail.itemCount < sys.itemCount && (
-                                                    <span className="text-amber-600 bg-amber-100 px-2 rounded-full text-xs">
-                                                        (已根据业态优化)
-                                                    </span>
-                                                )}
+                            return (
+                                <Card key={sys.id} className="overflow-hidden">
+                                    <div
+                                        className="p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
+                                        onClick={() => toggleExpand(sys.id)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 bg-primary/10 rounded text-primary">
+                                                <FileText className="w-6 h-6" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-lg font-semibold truncate">{sys.systemName}</h3>
+                                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                                    <span className="whitespace-nowrap">{sys.client}</span>
+                                                    <span>•</span>
+                                                    {/* Highlight if filtered */}
+                                                    <span className="whitespace-nowrap">{count} 项标准</span>
+                                                    {detail && detail.itemCount < sys.itemCount && (
+                                                        <span className="text-amber-600 bg-amber-100 px-2 rounded-full text-xs whitespace-nowrap">
+                                                            (已根据业态优化)
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        {loadingDetail === sys.id && <span className="text-sm text-muted-foreground animate-pulse">处理中...</span>}
-                                        {expandedSystem === sys.id ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronRight className="w-5 h-5 text-muted-foreground" />}
-                                    </div>
-                                </div>
-
-                                {expandedSystem === sys.id && detail && (
-                                    <div className="border-t bg-muted/10 p-4 animate-in fade-in slide-in-from-top-2">
-                                        <div className="bg-card rounded border overflow-x-auto max-h-[400px]">
-                                            <table className="w-full text-sm text-left">
-                                                <thead className="bg-muted text-muted-foreground sticky top-0">
-                                                    <tr>
-                                                        {filterColumns(detail.keys, detail.originalHeader).map((idx) => (
-                                                            <th key={detail.keys[idx]} className="p-2 border-b whitespace-nowrap">
-                                                                {detail.originalHeader?.[idx] || detail.keys[idx]}
-                                                            </th>
-                                                        ))}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {detail.content.slice(0, 50).map((row, rIdx) => (
-                                                        <tr key={rIdx} className="hover:bg-muted/30 border-b last:border-0">
-                                                            {filterColumns(detail.keys, detail.originalHeader).map((idx) => (
-                                                                <td key={detail.keys[idx]} className="p-2 truncate max-w-[200px]" title={String(row[detail.keys[idx]])}>
-                                                                    {String(row[detail.keys[idx]] || "")}
-                                                                </td>
-                                                            ))}
-                                                        </tr>
-                                                    ))}
-                                                    {detail.content.length > 50 && (
-                                                        <tr>
-                                                            <td colSpan={filterColumns(detail.keys, detail.originalHeader).length} className="p-4 text-center text-muted-foreground">
-                                                                还有 {detail.content.length - 50} 条数据...
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                    {detail.content.length === 0 && (
-                                                        <tr>
-                                                            <td colSpan={detail.keys.length} className="p-8 text-center text-muted-foreground">
-                                                                当前业态下无匹配标准项
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </tbody>
-                                            </table>
+                                        <div className="flex items-center gap-4">
+                                            {loadingDetail === sys.id && (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                                    <span className="text-sm text-muted-foreground">处理中...</span>
+                                                </div>
+                                            )}
+                                            {expandedSystem === sys.id ? (
+                                                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                            ) : (
+                                                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                                            )}
                                         </div>
                                     </div>
-                                )}
-                            </Card>
-                        )
-                    })}
-                </div>
+
+                                    {expandedSystem === sys.id && detail && (
+                                        <div className="border-t bg-muted/10 p-4 animate-in fade-in slide-in-from-top-2">
+                                            <div className="bg-card rounded border overflow-x-auto max-h-[400px]">
+                                                <table className="w-full text-sm text-left">
+                                                    <thead className="bg-muted text-muted-foreground sticky top-0">
+                                                        <tr>
+                                                            {filterColumns(detail.keys, detail.originalHeader).map((idx) => (
+                                                                <th key={detail.keys[idx]} className="p-2 border-b whitespace-nowrap">
+                                                                    {detail.originalHeader?.[idx] || detail.keys[idx]}
+                                                                </th>
+                                                            ))}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {detail.content.slice(0, 50).map((row, rIdx) => (
+                                                            <tr key={rIdx} className="hover:bg-muted/30 border-b last:border-0">
+                                                                {filterColumns(detail.keys, detail.originalHeader).map((idx) => (
+                                                                    <td key={detail.keys[idx]} className="p-2 truncate max-w-[200px]" title={String(row[detail.keys[idx]])}>
+                                                                        {String(row[detail.keys[idx]] || "")}
+                                                                    </td>
+                                                                ))}
+                                                            </tr>
+                                                        ))}
+                                                        {detail.content.length > 50 && (
+                                                            <tr>
+                                                                <td colSpan={filterColumns(detail.keys, detail.originalHeader).length} className="p-4 text-center text-muted-foreground">
+                                                                    还有 {detail.content.length - 50} 条数据...
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                        {detail.content.length === 0 && (
+                                                            <tr>
+                                                                <td colSpan={detail.keys.length} className="p-8 text-center text-muted-foreground">
+                                                                    当前业态下无匹配标准项
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+                                </Card>
+                            )
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );
