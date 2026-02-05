@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Data Files (Excel, DB, JSON Data)
+*.xls
+*.xlsx
+*.csv
+*.db
+*.sqlite
+public/rawFiles/
+public/systems/
+public/db.json
+public/standards_master.json

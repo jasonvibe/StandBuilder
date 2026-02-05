@@ -20,6 +20,49 @@ export default function Preview({ systemId, open, onClose }: PreviewProps) {
         if (open && systemId) {
             setLoading(true);
             setDetail(null);
+            
+            // Handle Master Library Special Case
+            if (systemId === 'MASTER_STD') {
+                fetch('/standards_master.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        const keys = data.length > 0 ? Object.keys(data[0]) : [];
+                        const masterDetail: SystemDetail = {
+                            id: 'MASTER_STD',
+                            client: 'Standard Library',
+                            context: 'Global',
+                            systemName: '企业标准库',
+                            module: 'Standard',
+                            applicableIndustries: [],
+                            applicableProjectTypes: [],
+                            date: new Date().toISOString(),
+                            filename: 'standards_master.json',
+                            itemCount: data.length,
+                            tags: ['Standard', 'Master'],
+                            originalHeader: keys,
+                            keys: keys,
+                            content: data
+                        };
+                        setDetail(masterDetail);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.error("Failed to load master details", err);
+                        setLoading(false);
+                    });
+                return;
+            }
+
+            // Handle User Uploaded Files (In Memory)
+            const userSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+            const memorySystem = userSystems.find((s: any) => s.id === systemId);
+            if (memorySystem) {
+                 setDetail(memorySystem);
+                 setLoading(false);
+                 return;
+            }
+
+            // Handle Server Files
             fetch(`/systems/${systemId}.json`)
                 .then(res => res.json())
                 .then(data => {

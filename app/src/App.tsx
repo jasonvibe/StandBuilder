@@ -12,14 +12,29 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load data from db.json
-    fetch('/db.json')
+    // Load standards_master.json
+    fetch('/standards_master.json')
       .then(res => res.json())
       .then(data => {
+        const masterSystem: SystemMetadata = {
+          id: 'MASTER_STD',
+          client: 'Standard Library',
+          context: 'Global',
+          systemName: '企业标准库',
+          date: '2025-02-05',
+          filename: 'standards_master.json',
+          itemCount: Array.isArray(data) ? data.length : 0,
+          tags: ['Standard', 'Master'],
+          // Add content property to enable merging
+          // Note: In a real app with huge data, we might not want to keep everything in memory
+          // but for this scale (client-side tool), it's fine.
+          content: Array.isArray(data) ? data : []
+        } as any;
+
         // Load user-uploaded systems from local storage
         const userSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
         // Merge both data sources
-        const mergedSystems = [...data, ...userSystems];
+        const mergedSystems = [masterSystem, ...userSystems];
         setAllSystems(mergedSystems);
         setLoading(false);
       })

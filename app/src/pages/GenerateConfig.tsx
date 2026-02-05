@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Check, Bot } from 'lucide-react';
 import type { SystemMetadata } from '@/types';
 import { cn } from '@/lib/utils';
+import { STANDARD_MODULES, INDUSTRIES, PROJECT_TYPES } from '@/lib/constants';
 
 interface GenerateConfigProps {
     open: boolean;
@@ -16,22 +17,15 @@ export interface GenerationConfig {
     projectTypes: string[];
     modules: string[];
     useAI: boolean;
+    specialRequirements?: string;
 }
-
-const INDUSTRIES = ["住宅", "商业", "办公", "工业", "市政", "轨道交通"];
-const PROJECT_TYPES = ["新建工程", "改扩建工程", "精装修", "园林景观"];
 
 export default function GenerateConfig({ open, onClose, onConfirm, systems }: GenerateConfigProps) {
     const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
     const [selectedModules, setSelectedModules] = useState<string[]>([]);
     const [useAI, setUseAI] = useState(false);
-
-    // Extract unique system names (modules)
-    const uniqueModules = useMemo(() => {
-        const names = new Set(systems.map(s => s.systemName));
-        return Array.from(names).sort();
-    }, [systems]);
+    const [specialRequirements, setSpecialRequirements] = useState('');
 
     if (!open) return null;
 
@@ -48,7 +42,8 @@ export default function GenerateConfig({ open, onClose, onConfirm, systems }: Ge
             industries: selectedIndustries,
             projectTypes: selectedTypes,
             modules: selectedModules,
-            useAI
+            useAI,
+            specialRequirements
         });
     };
 
@@ -87,8 +82,8 @@ export default function GenerateConfig({ open, onClose, onConfirm, systems }: Ge
                         </div>
                     </section>
 
-                    {/* Section 2: Project Type */}
-                    <section>
+                    {/* Section 2: Project Type (Removed) */}
+                    {/* <section>
                         <h3 className="text-lg font-semibold mb-4">2. 项目类型 (多选)</h3>
                         <div className="grid grid-cols-2 gap-3">
                             {PROJECT_TYPES.map(item => (
@@ -105,39 +100,64 @@ export default function GenerateConfig({ open, onClose, onConfirm, systems }: Ge
                                 </div>
                             ))}
                         </div>
-                    </section>
+                    </section> */}
 
                     {/* Section 3: Modules */}
                     <section>
-                        <h3 className="text-lg font-semibold mb-4">3. 包含模块 (按需勾选)</h3>
+                        <h3 className="text-lg font-semibold mb-4">2. 包含模块 (按需勾选)</h3>
                         <div className="border rounded-xl bg-card overflow-hidden">
                             <div className="p-2 border-b bg-muted/30 text-xs font-medium text-muted-foreground flex justify-between px-4">
-                                <span>可用模块 ({uniqueModules.length})</span>
+                                <span>可用模块 ({STANDARD_MODULES.length})</span>
                                 <span
                                     className="cursor-pointer hover:text-primary"
-                                    onClick={() => setSelectedModules(uniqueModules)}
+                                    onClick={() => setSelectedModules(STANDARD_MODULES)}
                                 >
                                     全选
                                 </span>
                             </div>
                             <div className="divide-y max-h-[300px] overflow-y-auto">
-                                {uniqueModules.map(mod => (
-                                    <div
-                                        key={mod}
-                                        className="flex items-center space-x-3 p-4 hover:bg-muted/50 cursor-pointer"
-                                        onClick={() => toggleSelection(selectedModules, mod, setSelectedModules)}
-                                    >
-                                        <div className={cn(
-                                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                                            selectedModules.includes(mod) ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground"
-                                        )}>
-                                            {selectedModules.includes(mod) && <Check className="w-3.5 h-3.5" />}
+                                {STANDARD_MODULES.map(mod => {
+                                    // Check if any system exists for this module
+                                    const hasData = systems.some(s => s.module === mod || s.systemName === mod);
+                                    
+                                    return (
+                                        <div
+                                            key={mod}
+                                            className={cn(
+                                                "flex items-center space-x-3 p-4 transition-colors",
+                                                hasData ? "hover:bg-muted/50 cursor-pointer" : "opacity-50 cursor-not-allowed bg-muted/10"
+                                            )}
+                                            onClick={() => hasData && toggleSelection(selectedModules, mod, setSelectedModules)}
+                                        >
+                                            <div className={cn(
+                                                "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                                                selectedModules.includes(mod) ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground"
+                                            )}>
+                                                {selectedModules.includes(mod) && <Check className="w-3.5 h-3.5" />}
+                                            </div>
+                                            <div className="flex-1 flex justify-between items-center">
+                                                <span>{mod}</span>
+                                                {!hasData && <span className="text-xs text-muted-foreground">暂无数据</span>}
+                                            </div>
                                         </div>
-                                        <span>{mod}</span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
+                        
+                        {useAI && (
+                            <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                                <label className="text-sm font-medium text-red-500 mb-1.5 block">
+                                    特殊要求:
+                                </label>
+                                <textarea
+                                    className="w-full min-h-[80px] p-3 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    placeholder="示例：我只需要土建、二次结构、精装修和机电的内容"
+                                    value={specialRequirements}
+                                    onChange={(e) => setSpecialRequirements(e.target.value)}
+                                />
+                            </div>
+                        )}
                     </section>
 
                     {/* Section 4: AI */}

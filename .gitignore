@@ -4,6 +4,15 @@
 # 生成的JSON文件
 app/public/systems/
 app/public/db.json
+app/public/standards_master.json
+app/public/rawFiles/
+
+# Excel & DB Files
+*.xls
+*.xlsx
+*.csv
+*.db
+*.sqlite
 
 # 依赖目录
 node_modules/

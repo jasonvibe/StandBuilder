@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 
-const SOURCE_DIR = path.resolve(__dirname, '../../体系数据库');
+// Point to the structured directory we just created
+const SOURCE_DIR = '/Users/jasonmeng/Documents/Ai_Projects/数据库/体系库_Structured';
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const OUTPUT_DIR = path.join(PUBLIC_DIR, 'systems');
 const DB_OUTPUT = path.join(PUBLIC_DIR, 'db.json');
@@ -24,95 +25,155 @@ function parseFilename(filename) {
 
     if (match) {
         return {
-            client: match[1],
+            // Client is now better derived from directory, but we keep filename parsing as fallback/verification
+            filenameClient: match[1],
             context: match[2],
             systemName: match[3],
             date: match[4]
         };
     }
-    return null;
+    return {
+        systemName: filename.replace(/\.xls[x]?$/, ''),
+        date: ''
+    };
+}
+
+// Recursive function to walk directories and collect files with metadata
+function walkDir(dir, industry, moduleName, clientName, fileList) {
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+            // Determine the next level of hierarchy
+            // Root -> Industry -> Module -> Client -> Files
+            if (!industry) {
+                walkDir(filePath, file, null, null, fileList);
+            } else if (!moduleName) {
+                walkDir(filePath, industry, file, null, fileList);
+            } else if (!clientName) {
+                walkDir(filePath, industry, moduleName, file, fileList);
+            } else {
+                // Already deep enough, continue or just treat subdirs as flat
+                walkDir(filePath, industry, moduleName, clientName, fileList);
+            }
+        } else if (file.endsWith('.xls') || file.endsWith('.xlsx')) {
+            // We found a file
+            // If we are at the root or shallow levels, some metadata might be missing
+            // But based on our structure, we expect Industry/Module/Client/File
+            fileList.push({
+                filePath,
+                filename: file,
+                industry: industry || 'Uncategorized',
+                module: moduleName || 'General',
+                client: clientName || 'Unknown'
+            });
+        }
+    }
 }
 
 function processFiles() {
     console.log(`Scanning ${SOURCE_DIR}...`);
-    const files = fs.readdirSync(SOURCE_DIR).filter(f => f.endsWith('.xls') || f.endsWith('.xlsx'));
+    
+    const allFiles = [];
+    walkDir(SOURCE_DIR, null, null, null, allFiles);
+
+    console.log(`Found ${allFiles.length} files.`);
 
     const db = [];
 
-    files.forEach((file, index) => {
-        const filePath = path.join(SOURCE_DIR, file);
-        const metadata = parseFilename(file);
-
-        if (!metadata) {
-            console.warn(`Skipping file with unknown format: ${file}`);
-            return;
-        }
+    allFiles.forEach((fileInfo, index) => {
+        const { filePath, filename, industry, module, client } = fileInfo;
+        const fileMetadata = parseFilename(filename);
 
         const id = `SYS_${index.toString().padStart(3, '0')}`; // Simple ID
 
-        console.log(`Processing [${id}] ${file}...`);
+        console.log(`Processing [${id}] ${filename}...`);
 
-        // Read Excel
-        const workbook = XLSX.readFile(filePath);
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+        try {
+            // Read Excel
+            const workbook = XLSX.readFile(filePath);
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
 
-        // Convert to JSON
-        // header: 1 returns array of arrays. header: 'A' returns object with keys A,B,C...
-        // We probably want specific parsing.
-        // Based on inspection, Row 1 (index 1) is the Key row.
+            // Convert to JSON
+            // header: 1 returns array of arrays. header: 'A' returns object with keys A,B,C...
+            // We probably want specific parsing.
+            // Based on inspection, Row 1 (index 1) is the Key row.
 
-        const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        // Structure: 
-        // Row 0: Chinese desc (ignore for keys, keep for labels if needed)
-        // Row 1: Keys (CateId, CateName...)
-        // Row 2+: Data
+            // Structure: 
+            // Row 0: Chinese desc (ignore for keys, keep for labels if needed)
+            // Row 1: Keys (CateId, CateName...)
+            // Row 2+: Data
 
-        let content = [];
-        if (rawData.length > 2) {
-            const resultKeys = rawData[1]; // Use 2nd row as keys
-            // Filter out empty keys
+            let content = [];
+            let keys = [];
+            let originalHeader = [];
 
-            for (let i = 2; i < rawData.length; i++) {
-                const row = rawData[i];
-                if (!row || row.length === 0) continue;
+            if (rawData.length > 1) {
+                originalHeader = rawData[0];
+                // Check if row 1 exists, otherwise fall back to row 0 or generate keys
+                if (rawData.length > 1) {
+                     keys = rawData[1];
+                } else {
+                     keys = rawData[0]; // Fallback if only 1 row
+                }
 
-                const rowObj = {};
-                resultKeys.forEach((key, kIndex) => {
-                    if (key) {
-                        rowObj[key] = row[kIndex];
-                    }
-                });
-                content.push(rowObj);
+                for (let i = 2; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row || row.length === 0) continue;
+
+                    const rowObj = {};
+                    let hasData = false;
+                    keys.forEach((key, kIndex) => {
+                        if (key) {
+                            rowObj[key] = row[kIndex];
+                            hasData = true;
+                        }
+                    });
+                    if (hasData) content.push(rowObj);
+                }
             }
+
+            // Construct System Metadata
+            const metadata = {
+                id,
+                client: client, // Prioritize directory structure
+                context: fileMetadata.context || '',
+                systemName: fileMetadata.systemName || filename,
+                module: module, // From directory
+                applicableIndustries: [industry], // From directory
+                applicableProjectTypes: [], // Placeholder
+                date: fileMetadata.date || '',
+                filename: filename,
+                rawPath: `/rawFiles/${filename}`,
+                itemCount: content.length,
+                tags: [client, module, industry]
+            };
+
+            // Save detailed JSON
+            const systemData = {
+                ...metadata,
+                originalHeader,
+                keys,
+                content
+            };
+
+            fs.writeFileSync(path.join(OUTPUT_DIR, `${id}.json`), JSON.stringify(systemData, null, 2));
+
+            // Copy content to public/rawFiles
+            fs.copyFileSync(filePath, path.join(RAW_DIR, filename));
+
+            // Add to DB Index (exclude heavy content)
+            db.push(metadata);
+
+        } catch (err) {
+            console.error(`Error processing ${filename}:`, err);
         }
-
-        // Save detailed JSON
-        // We include the full content in the individual file
-        const systemData = {
-            id,
-            ...metadata,
-            filename: file,
-            originalHeader: rawData[0], // Keep Chinese headers if useful for display
-            keys: rawData[1],
-            content
-        };
-
-        fs.writeFileSync(path.join(OUTPUT_DIR, `${id}.json`), JSON.stringify(systemData, null, 2));
-
-        // Copy content to public/rawFiles
-        fs.copyFileSync(filePath, path.join(RAW_DIR, file));
-
-        // Add to DB Index (exclude heavy content)
-        db.push({
-            id,
-            ...metadata,
-            filename: file,
-            rawPath: `/rawFiles/${file}`,
-            itemCount: content.length,
-            tags: [metadata.client, metadata.systemName] // Basic tags
-        });
     });
 
     // Save DB

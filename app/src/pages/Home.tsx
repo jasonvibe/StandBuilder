@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Search, FolderKanban, FileSpreadsheet, Sparkles, Download } from 'lucide-react';
+import { Search, FolderKanban, FileSpreadsheet, Sparkles, Download, Trash2, Tag } from 'lucide-react';
 import type { SystemMetadata } from '@/types';
 import Preview from './Preview';
+import UploadDialog from '@/components/UploadDialog';
 import * as XLSX from 'xlsx';
+import { STANDARD_MODULES } from '@/lib/constants';
 
 interface HomeProps {
     onGenerate: () => void;
@@ -13,9 +15,69 @@ interface HomeProps {
     loading: boolean;
 }
 
+// Helper to auto-detect module from filename
+const detectModule = (filename: string): string => {
+    // Sort modules by length (descending) to match longest specific modules first
+    // e.g., match "验房问题库" before "验房" (if exists) or prevent partial mismatch
+    const sortedModules = [...STANDARD_MODULES].sort((a, b) => b.length - a.length);
+    
+    for (const mod of sortedModules) {
+        if (filename.includes(mod)) {
+            return mod;
+        }
+        
+        // Handle special cases where filename might have "移动验房-问题库" which matches "验房问题库" loosely?
+        // Or if the standard module is "验房问题库" but filename has "问题库" and "验房" separated
+        // Let's stick to strict inclusion first, but maybe the user's filename is "移动验房-问题库体系"
+        // and standard module is "验房问题库". 
+        // "移动验房-问题库体系".includes("验房问题库") is FALSE.
+        
+        // Split module into keywords if it's long?
+        if (mod === "验房问题库") {
+            if (filename.includes("验房") && filename.includes("问题库")) {
+                return mod;
+            }
+        }
+    }
+    return '';
+};
+
+// Helper to auto-detect industry from client/filename (Mocking "Online Search" with Heuristic Keywords)
+const detectIndustry = (text: string): string[] => {
+    const industries = [];
+    if (text.includes('住宅') || text.includes('置业') || text.includes('地产') || text.includes('公寓') || text.includes('别墅')) {
+        industries.push('住宅');
+    }
+    if (text.includes('商业') || text.includes('广场') || text.includes('中心') || text.includes('商场') || text.includes('MALL')) {
+        industries.push('商业');
+    }
+    if (text.includes('办公') || text.includes('写字楼') || text.includes('总部')) {
+        industries.push('办公');
+    }
+    if (text.includes('工业') || text.includes('厂房') || text.includes('园区') || text.includes('物流') || text.includes('仓储')) {
+        industries.push('工业');
+    }
+    if (text.includes('市政') || text.includes('道路') || text.includes('桥梁') || text.includes('管廊')) {
+        industries.push('市政');
+    }
+    if (text.includes('轨道') || text.includes('地铁') || text.includes('铁路') || text.includes('高铁')) {
+        industries.push('轨道交通');
+    }
+    return industries;
+};
+
+// Helper to extract client name from filename (Simple regex)
+const extractClient = (filename: string): string => {
+    // Try to match pattern like "Client-PROD..." or just take first part before "-"
+    const match = filename.match(/^([^-]+)-/);
+    return match ? match[1] : '用户上传';
+};
+
 export default function Home({ onGenerate, systems, loading }: HomeProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClient, setSelectedClient] = useState<string | null>(null);
+    const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+    const [selectedModule, setSelectedModule] = useState<string | null>(null);
     const [previewId, setPreviewId] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -23,13 +85,21 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    const clients = Array.from(new Set(systems.map(s => s.client)));
+    // New state for upload dialog
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+    const [pendingFiles, setPendingFiles] = useState<any[]>([]);
+
+    const clients = Array.from(new Set(systems.map(s => s.client).filter(Boolean)));
+    const industries = Array.from(new Set(systems.flatMap(s => s.applicableIndustries || []).filter(Boolean)));
+    const modules = Array.from(new Set(systems.map(s => s.module).filter(Boolean)));
 
     const filteredSystems = systems.filter(sys => {
         const matchesSearch = sys.systemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             sys.client.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesClient = selectedClient ? sys.client === selectedClient : true;
-        return matchesSearch && matchesClient;
+        const matchesIndustry = selectedIndustry ? sys.applicableIndustries?.includes(selectedIndustry) : true;
+        const matchesModule = selectedModule ? sys.module === selectedModule : true;
+        return matchesSearch && matchesClient && matchesIndustry && matchesModule;
     });
 
     // Handle file upload
@@ -54,10 +124,15 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const content = XLSX.utils.sheet_to_json(worksheet);
 
+                // Auto-detect metadata
+                const detectedModule = detectModule(file.name);
+                const detectedClient = extractClient(file.name);
+                const detectedIndustries = detectIndustry(file.name);
+
                 // Generate system metadata
                 const systemId = `USER_${Date.now()}_${i}`;
                 const systemName = file.name.replace(/\.xls[x]?$/, '');
-                const client = '用户上传';
+                const client = detectedClient; // Use detected client
                 const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
 
                 // Extract headers
@@ -90,26 +165,21 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                     tags: [client, systemName],
                     originalHeader,
                     keys,
-                    content: processedContent
+                    content: processedContent,
+                    // Pre-fill fields for dialog
+                    module: detectedModule,
+                    applicableIndustries: detectedIndustries,
+                    applicableProjectTypes: [] 
                 };
 
                 processedFiles.push(system);
             }
 
-            // Store in local storage
-            const existingSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
-            const updatedSystems = [...existingSystems, ...processedFiles];
-            localStorage.setItem('userSystems', JSON.stringify(updatedSystems));
-
+            // Instead of saving directly, open the dialog
+            setPendingFiles(processedFiles);
+            setUploading(false);
             setUploadProgress(100);
-            setUploadSuccess(`成功上传并处理了 ${files.length} 个文件`);
-
-            // Reset after 3 seconds
-            setTimeout(() => {
-                setUploadSuccess(null);
-                setUploading(false);
-                setUploadProgress(0);
-            }, 3000);
+            setIsUploadDialogOpen(true);
 
         } catch (error) {
             console.error('File upload error:', error);
@@ -120,6 +190,30 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
             setTimeout(() => {
                 setUploadError(null);
             }, 3000);
+        }
+    };
+
+    const handleSaveUploadedFiles = (files: any[]) => {
+        // Store in local storage
+        const existingSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+        const updatedSystems = [...existingSystems, ...files];
+        localStorage.setItem('userSystems', JSON.stringify(updatedSystems));
+
+        setIsUploadDialogOpen(false);
+        setUploadSuccess(`成功上传并处理了 ${files.length} 个文件`);
+
+        // Reload page to reflect changes (simple way)
+        window.location.reload();
+    };
+
+    // Handle delete system
+    const handleDeleteSystem = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click
+        if (confirm('确定要删除这个体系文件吗？此操作不可恢复。')) {
+            const existingSystems = JSON.parse(localStorage.getItem('userSystems') || '[]');
+            const updatedSystems = existingSystems.filter((s: any) => s.id !== id);
+            localStorage.setItem('userSystems', JSON.stringify(updatedSystems));
+            window.location.reload();
         }
     };
 
@@ -222,95 +316,141 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 items-center bg-card p-4 rounded-xl border shadow-sm">
-                    <div className="relative flex-1 w-full">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="搜索体系名称、客户..."
-                            className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-                        <Button
-                            variant={selectedClient === null ? "default" : "outline"}
-                            onClick={() => setSelectedClient(null)}
-                        >
-                            全部
-                        </Button>
-                        {clients.map(client => (
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button
-                                    key={client}
-                                    variant={selectedClient === client ? "default" : "outline"}
-                                    onClick={() => setSelectedClient(client)}
-                                    className="whitespace-nowrap transition-all duration-200"
-                                >
-                                    {client}
-                                </Button>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-
+                {/* Removed redundant filter section */}
+                
                 {/* Content Grid */}
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-                        <p className="text-muted-foreground">加载体系数据库中...</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredSystems.map((sys, index) => (
-                            <motion.div
-                                key={sys.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.05
-                                }}
+                <div className="space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h2 className="text-lg font-semibold flex items-center gap-2 shrink-0">
+                            <FolderKanban className="w-5 h-5 text-primary" />
+                            体系文件列表
+                        </h2>
+                        
+                        {/* Quick Filters */}
+                        <div className="flex flex-wrap gap-2 items-center flex-1 justify-end">
+                            <div className="relative w-full max-w-xs mr-2">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    placeholder="搜索体系名称、客户..."
+                                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-8 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <select
+                                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                value={selectedIndustry || ''}
+                                onChange={(e) => setSelectedIndustry(e.target.value || null)}
                             >
-                                <Card className="group hover:border-primary/50 transition-all flex flex-col h-full">
-                                <CardHeader
-                                    className="cursor-pointer hover:bg-muted/50 rounded-t-lg transition-colors"
-                                    onClick={() => setPreviewId(sys.id)}
+                                <option value="">所有行业</option>
+                                {industries.map(ind => (
+                                    <option key={ind} value={ind}>{ind}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                value={selectedModule || ''}
+                                onChange={(e) => setSelectedModule(e.target.value || null)}
+                            >
+                                <option value="">所有模块</option>
+                                {modules.map(mod => (
+                                    <option key={mod} value={mod}>{mod}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                value={selectedClient || ''}
+                                onChange={(e) => setSelectedClient(e.target.value || null)}
+                            >
+                                <option value="">所有客户</option>
+                                {clients.map(client => (
+                                    <option key={client} value={client}>{client}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+                            <p className="text-muted-foreground">加载体系数据库中...</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredSystems.map((sys, index) => (
+                                <motion.div
+                                    key={sys.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{
+                                        duration: 0.5,
+                                        delay: index * 0.05
+                                    }}
                                 >
-                                    <div className="flex justify-between items-start">
-                                        <div className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
-                                            {sys.client}
+                                    <Card className="group hover:border-primary/50 transition-all flex flex-col h-full relative">
+                                        {sys.id !== 'MASTER_STD' && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => handleDeleteSystem(sys.id, e)}
+                                                title="删除"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        )}
+                                    <CardHeader
+                                        className="cursor-pointer hover:bg-muted/50 rounded-t-lg transition-colors pb-3"
+                                        onClick={() => setPreviewId(sys.id)}
+                                    >
+                                        <div className="flex flex-wrap gap-2 mb-3 pr-8">
+                                            <div className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                                                {sys.client}
+                                            </div>
+                                            {sys.module && (
+                                                <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
+                                                    <Tag className="w-3 h-3" />
+                                                    {sys.module}
+                                                </div>
+                                            )}
+                                            {sys.applicableIndustries?.map(ind => (
+                                                <div key={ind} className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-semibold">
+                                                    {ind}
+                                                </div>
+                                            ))}
                                         </div>
-                                        <FileSpreadsheet className="text-muted-foreground group-hover:text-primary transition-colors" />
-                                    </div>
-                                    <CardTitle className="mt-4 line-clamp-2 leading-tight">
-                                        {sys.systemName}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {sys.itemCount} 个标准项 | {sys.date}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="mt-auto border-t p-0">
-                                    {sys.rawPath ? (
-                                        <a
-                                            href={sys.rawPath}
-                                            download
-                                            className="flex items-center justify-between p-4 text-xs text-muted-foreground hover:bg-muted/50 transition-colors w-full break-all"
-                                            title="点击下载原始文件"
-                                        >
-                                            <span className="truncate flex-1">{sys.filename}</span>
-                                            <Download className="w-3 h-3 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </a>
-                                    ) : (
-                                        <div className="p-4 text-xs text-muted-foreground break-all">
-                                            {sys.filename}
-                                        </div>
-                                    )}
-                                </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                                        <CardTitle className="line-clamp-2 leading-tight text-base">
+                                            {sys.systemName}
+                                        </CardTitle>
+                                        <CardDescription className="mt-2 flex items-center gap-2">
+                                            <FileSpreadsheet className="w-3 h-3" />
+                                            {sys.itemCount} 个标准项 | {sys.date}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="mt-auto border-t p-0">
+                                        {sys.rawPath ? (
+                                            <a
+                                                href={sys.rawPath}
+                                                download
+                                                className="flex items-center justify-between p-4 text-xs text-muted-foreground hover:bg-muted/50 transition-colors w-full break-all"
+                                                title="点击下载原始文件"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <span className="truncate flex-1">{sys.filename}</span>
+                                                <Download className="w-3 h-3 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        ) : (
+                                            <div className="p-4 text-xs text-muted-foreground break-all">
+                                                {sys.filename}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                    </Card>
+                                </motion.div>
+                            ))}
                         {filteredSystems.length === 0 && (
                             <div className="col-span-full text-center py-20">
                                 <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -323,11 +463,19 @@ export default function Home({ onGenerate, systems, loading }: HomeProps) {
                     </div>
                 )}
             </div>
-
+            </div>
+            
             <Preview
                 systemId={previewId}
                 open={!!previewId}
                 onClose={() => setPreviewId(null)}
+            />
+
+            <UploadDialog
+                open={isUploadDialogOpen}
+                files={pendingFiles}
+                onClose={() => setIsUploadDialogOpen(false)}
+                onSave={handleSaveUploadedFiles}
             />
 
             {/* Floating Action Button */}
